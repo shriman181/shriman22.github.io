@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Autrix — AI Sound Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg0:#05090F;--bg1:#0B1120;--bg2:#111829;--bg3:#192135;
+  --teal:#08D4AC;--teal2:#05A888;--teal3:rgba(8,212,172,0.12);--teal4:rgba(8,212,172,0.06);
+  --amber:#F0A030;--amber2:rgba(240,160,48,0.15);
+  --purple:#9B8FE8;--purple2:rgba(155,143,232,0.12);
+  --t1:#EDE8E0;--t2:#8A97B4;--t3:#3E4D6A;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.04);
+  --fd:'Cormorant Garamond',serif;--fb:'Sora',sans-serif;
+  --r:12px;--r2:20px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg0);color:var(--t1);font-family:var(--fb);font-size:16px;line-height:1.7;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+
+/* --- NAV --- */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 5%;transition:background 0.4s,backdrop-filter 0.4s}
+nav.scrolled{background:rgba(5,9,15,0.85);backdrop-filter:blur(20px);border-bottom:0.5px solid var(--border)}
+.nav-logo{display:flex;align-items:center;gap:10px;font-family:var(--fd);font-size:22px;font-weight:500;letter-spacing:0.5px;color:var(--t1)}
+.nav-logo-mark{width:32px;height:32px;border-radius:8px;background:var(--teal);display:flex;align-items:center;justify-content:center}
+.nav-links{display:flex;align-items:center;gap:32px}
+.nav-links a{font-size:13px;color:var(--t2);font-weight:400;letter-spacing:0.3px;transition:color 0.2s}
+.nav-links a:hover{color:var(--t1)}
+.nav-cta{background:var(--teal);color:#05090F;font-size:13px;font-weight:600;padding:9px 22px;border-radius:40px;letter-spacing:0.2px;transition:opacity 0.2s}
+.nav-cta:hover{opacity:0.85}
+
+/* --- HERO --- */
+#hero{position:relative;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:120px 5% 80px;overflow:hidden}
+#waveCanvas{position:absolute;inset:0;width:100%;height:100%;opacity:0.55}
+.hero-grain{position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");opacity:0.4;pointer-events:none}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(8,212,172,0.1);border:0.5px solid rgba(8,212,172,0.3);border-radius:40px;padding:6px 16px;font-size:12px;color:var(--teal);letter-spacing:0.6px;text-transform:uppercase;font-weight:500;margin-bottom:28px;position:relative}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.8)}}
+h1.hero-title{font-family:var(--fd);font-size:clamp(38px,6vw,80px);font-weight:400;line-height:1.12;letter-spacing:-0.5px;color:var(--t1);position:relative;margin-bottom:24px;max-width:880px}
+h1.hero-title em{font-style:italic;color:var(--teal)}
+.hero-sub{font-size:clamp(15px,1.6vw,18px);color:var(--t2);max-width:560px;line-height:1.75;position:relative;margin-bottom:44px;font-weight:300}
+.hero-btns{display:flex;align-items:center;gap:14px;position:relative;flex-wrap:wrap;justify-content:center}
+.btn-primary{background:var(--teal);color:#05090F;font-size:14px;font-weight:600;padding:13px 28px;border-radius:40px;letter-spacing:0.2px;transition:opacity 0.2s,transform 0.2s}
+.btn-primary:hover{opacity:0.88;transform:translateY(-1px)}
+.btn-outline{background:transparent;color:var(--t1);font-size:14px;font-weight:400;padding:12px 28px;border-radius:40px;border:0.5px solid var(--border2);border-color:rgba(255,255,255,0.2);transition:background 0.2s,transform 0.2s;display:flex;align-items:center;gap:8px}
+.btn-outline:hover{background:rgba(255,255,255,0.05);transform:translateY(-1px)}
+.play-icon{width:20px;height:20px;border-radius:50%;border:1px solid rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center}
+.play-icon svg{margin-left:2px}
+.hero-scroll{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;opacity:0.4;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--t2)}
+.scroll-line{width:1px;height:40px;background:linear-gradient(to bottom,var(--teal),transparent);animation:scrollDown 2s ease-in-out infinite}
+@keyframes scrollDown{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform:scaleY(1);transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+/* --- STATS BAR --- */
+.stats-bar{background:var(--bg1);border-top:0.5px solid var(--border);border-bottom:0.5px solid var(--border);padding:36px 5%;display:grid;grid-template-columns:repeat(3,1fr);gap:0}
+.stat-item{text-align:center;padding:0 24px;position:relative}
+.stat-item+.stat-item::before{content:'';position:absolute;left:0;top:10%;height:80%;width:0.5px;background:var(--border)}
+.stat-num{font-family:var(--fd);font-size:clamp(32px,4vw,52px);font-weight:500;color:var(--teal);line-height:1;margin-bottom:6px}
+.stat-label{font-size:12px;color:var(--t2);letter-spacing:0.3px;line-height:1.5}
+
+/* --- SECTIONS COMMON --- */
+section{padding:100px 5%}
+.section-label{display:inline-block;font-size:11px;font-weight:500;letter-spacing:1.2px;text-transform:uppercase;color:var(--teal);margin-bottom:18px}
+h2.section-title{font-family:var(--fd);font-size:clamp(30px,4vw,52px);font-weight:400;line-height:1.15;color:var(--t1);margin-bottom:20px}
+h2.section-title em{font-style:italic;color:var(--teal)}
+.section-sub{font-size:15px;color:var(--t2);max-width:540px;line-height:1.8;font-weight:300}
+
+/* --- PROBLEM --- */
+#problem{background:var(--bg1)}
+.problem-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start;margin-top:64px}
+.problem-text p{font-size:15px;color:var(--t2);line-height:1.85;margin-bottom:20px;font-weight:300}
+.problem-text p strong{color:var(--t1);font-weight:500}
+.problem-quote{background:var(--bg2);border-left:2px solid var(--teal);border-radius:0 var(--r) var(--r) 0;padding:24px 28px;margin-top:36px}
+.problem-quote p{font-family:var(--fd);font-size:19px;font-style:italic;color:var(--t1);line-height:1.6;font-weight:300}
+.problem-quote span{display:block;margin-top:12px;font-size:12px;color:var(--t2);font-family:var(--fb);font-style:normal;letter-spacing:0.3px}
+.problem-visual{display:flex;flex-direction:column;gap:16px}
+.pain-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r);padding:22px 24px;transition:border-color 0.3s}
+.pain-card:hover{border-color:rgba(8,212,172,0.25)}
+.pain-card-title{font-size:13px;font-weight:500;color:var(--t1);margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.pain-icon{width:8px;height:8px;border-radius:50%;background:var(--amber)}
+.pain-card p{font-size:13px;color:var(--t2);line-height:1.65;font-weight:300}
+
+/* --- PRODUCT --- */
+#product{background:var(--bg0)}
+.product-layout{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;margin-top:64px}
+.product-steps{display:flex;flex-direction:column;gap:32px;margin-top:40px}
+.p-step{display:flex;gap:20px;align-items:flex-start}
+.p-step-num{width:32px;height:32px;border-radius:50%;border:1px solid rgba(8,212,172,0.3);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--teal);font-weight:500;flex-shrink:0;margin-top:2px}
+.p-step-body h4{font-size:14px;font-weight:500;color:var(--t1);margin-bottom:5px}
+.p-step-body p{font-size:13px;color:var(--t2);line-height:1.7;font-weight:300}
+.product-visual{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r2);padding:32px;position:relative;overflow:hidden}
+.pv-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.pv-title{font-size:12px;color:var(--t2);letter-spacing:0.3px}
+.pv-badge{background:var(--teal3);border:0.5px solid rgba(8,212,172,0.25);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--teal);font-weight:500}
+.pv-state-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px}
+.pv-state{background:var(--bg3);border:0.5px solid var(--border);border-radius:8px;padding:12px 14px}
+.pv-state-label{font-size:10px;color:var(--t3);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:4px}
+.pv-state-val{font-size:13px;font-weight:500;color:var(--t1)}
+.pv-state-bar{height:3px;background:var(--bg0);border-radius:2px;margin-top:8px;overflow:hidden}
+.pv-state-fill{height:100%;border-radius:2px;background:var(--teal);transition:width 1s ease}
+.pv-waveform{background:var(--bg3);border:0.5px solid var(--border);border-radius:8px;padding:16px;margin-bottom:10px}
+.pv-waveform-label{font-size:10px;color:var(--t3);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:10px}
+.wv-bars{display:flex;align-items:flex-end;gap:3px;height:40px}
+.wv-bar{flex:1;border-radius:2px 2px 0 0;background:var(--teal);opacity:0.7;transition:height 0.3s ease}
+.pv-output{background:rgba(8,212,172,0.06);border:0.5px solid rgba(8,212,172,0.18);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px}
+.pv-output-dot{width:8px;height:8px;border-radius:50%;background:var(--teal);flex-shrink:0;animation:pulse 2s ease-in-out infinite}
+.pv-output p{font-size:12px;color:var(--teal);font-weight:400}
+
+/* --- FEATURES --- */
+#features{background:var(--bg1)}
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:64px}
+.feat-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r2);padding:28px;transition:border-color 0.3s,transform 0.2s}
+.feat-card:hover{border-color:rgba(8,212,172,0.2);transform:translateY(-3px)}
+.feat-icon{width:44px;height:44px;border-radius:10px;margin-bottom:18px;display:flex;align-items:center;justify-content:center}
+.feat-icon.t{background:var(--teal3)}
+.feat-icon.a{background:var(--amber2)}
+.feat-icon.p{background:var(--purple2)}
+.feat-card h3{font-size:15px;font-weight:500;color:var(--t1);margin-bottom:8px}
+.feat-card p{font-size:13px;color:var(--t2);line-height:1.7;font-weight:300}
+
+/* --- HOW IT WORKS --- */
+#how{background:var(--bg0)}
+.how-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:64px;position:relative}
+.how-steps::before{content:'';position:absolute;top:22px;left:calc(16.67% + 16px);right:calc(16.67% + 16px);height:0.5px;background:linear-gradient(to right,var(--teal),rgba(8,212,172,0.2))}
+.how-step{padding:0 24px;position:relative}
+.how-num{width:44px;height:44px;border-radius:50%;border:0.5px solid rgba(8,212,172,0.4);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:20px;color:var(--teal);margin-bottom:24px;background:var(--bg0);position:relative;z-index:1}
+.how-step h3{font-family:var(--fd);font-size:22px;font-weight:400;color:var(--t1);margin-bottom:12px}
+.how-step p{font-size:13px;color:var(--t2);line-height:1.75;font-weight:300}
+.how-tag{display:inline-block;margin-top:14px;font-size:11px;color:var(--teal);background:var(--teal4);border-radius:20px;padding:3px 10px}
+
+/* --- FOR WHOM --- */
+#whom{background:var(--bg1)}
+.whom-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:64px}
+.whom-card{border-radius:var(--r2);padding:40px;border:0.5px solid var(--border);position:relative;overflow:hidden}
+.whom-card.games{background:linear-gradient(135deg,var(--bg2) 0%,rgba(8,212,172,0.04) 100%)}
+.whom-card.film{background:linear-gradient(135deg,var(--bg2) 0%,rgba(240,160,48,0.04) 100%)}
+.whom-card-label{font-size:11px;font-weight:500;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px}
+.whom-card.games .whom-card-label{color:var(--teal)}
+.whom-card.film .whom-card-label{color:var(--amber)}
+.whom-card h3{font-family:var(--fd);font-size:28px;font-weight:400;color:var(--t1);margin-bottom:14px;line-height:1.2}
+.whom-card p{font-size:14px;color:var(--t2);line-height:1.75;font-weight:300;margin-bottom:24px}
+.whom-list{display:flex;flex-direction:column;gap:10px}
+.whom-item{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--t2);font-weight:300}
+.whom-check{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px}
+.whom-card.games .whom-check{background:var(--teal3);color:var(--teal)}
+.whom-card.film .whom-check{background:var(--amber2);color:var(--amber)}
+.whom-bg-text{position:absolute;bottom:-20px;right:-10px;font-family:var(--fd);font-size:100px;font-weight:400;opacity:0.04;line-height:1;user-select:none;pointer-events:none}
+
+/* --- MANIFESTO --- */
+#manifesto{background:var(--bg0);padding:120px 5%;text-align:center}
+.manifesto-inner{max-width:800px;margin:0 auto}
+.manifesto-rule{width:40px;height:1px;background:var(--teal);margin:0 auto 40px}
+blockquote{font-family:var(--fd);font-size:clamp(28px,4vw,50px);font-weight:300;font-style:italic;color:var(--t1);line-height:1.3;letter-spacing:-0.3px;margin-bottom:32px}
+blockquote strong{font-style:normal;font-weight:600;color:var(--teal)}
+.manifesto-attr{font-size:13px;color:var(--t2);letter-spacing:0.3px}
+
+/* --- CTA --- */
+#cta{background:var(--bg1);border-top:0.5px solid var(--border)}
+.cta-inner{max-width:700px;margin:0 auto;text-align:center}
+.cta-inner h2{font-family:var(--fd);font-size:clamp(32px,4.5vw,60px);font-weight:400;color:var(--t1);line-height:1.15;margin-bottom:20px}
+.cta-inner p{font-size:15px;color:var(--t2);margin-bottom:40px;line-height:1.75;font-weight:300}
+.cta-form{display:flex;gap:10px;max-width:420px;margin:0 auto;flex-wrap:wrap;justify-content:center}
+.cta-input{flex:1;min-width:220px;background:var(--bg2);border:0.5px solid rgba(255,255,255,0.15);border-radius:40px;padding:13px 20px;font-size:14px;color:var(--t1);font-family:var(--fb);outline:none;transition:border-color 0.2s}
+.cta-input::placeholder{color:var(--t3)}
+.cta-input:focus{border-color:rgba(8,212,172,0.4)}
+.cta-note{margin-top:16px;font-size:12px;color:var(--t3)}
+
+/* --- FOOTER --- */
+footer{background:var(--bg0);border-top:0.5px solid var(--border);padding:48px 5%}
+.footer-inner{display:flex;justify-content:space-between;align-items:flex-start;gap:40px}
+.footer-brand .nav-logo{margin-bottom:10px}
+.footer-brand p{font-size:13px;color:var(--t3);max-width:260px;line-height:1.6}
+.footer-links{display:flex;gap:60px}
+.footer-col h4{font-size:11px;font-weight:500;letter-spacing:0.8px;text-transform:uppercase;color:var(--t3);margin-bottom:14px}
+.footer-col a{display:block;font-size:13px;color:var(--t2);margin-bottom:8px;transition:color 0.2s}
+.footer-col a:hover{color:var(--t1)}
+.footer-bottom{margin-top:40px;padding-top:24px;border-top:0.5px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.footer-bottom p{font-size:12px;color:var(--t3)}
+
+/* --- SCROLL REVEAL --- */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity 0.7s ease,transform 0.7s ease}
+.reveal.visible{opacity:1;transform:none}
+.reveal-d1{transition-delay:0.1s}
+.reveal-d2{transition-delay:0.2s}
+.reveal-d3{transition-delay:0.3s}
+.reveal-d4{transition-delay:0.4s}
+
+/* --- RESPONSIVE --- */
+@media(max-width:900px){
+  .problem-grid,.product-layout,.how-steps,.whom-grid{grid-template-columns:1fr;gap:40px}
+  .features-grid{grid-template-columns:1fr 1fr}
+  .footer-inner{flex-direction:column}
+  .how-steps::before{display:none}
+  .nav-links a:not(.nav-cta){display:none}
+  .stats-bar{grid-template-columns:1fr;gap:24px}
+  .stat-item+.stat-item::before{display:none}
+}
+@media(max-width:600px){.features-grid{grid-template-columns:1fr}.footer-links{flex-direction:column;gap:30px}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-mark">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <path d="M2 9 Q4.5 4 7 9 Q9.5 14 12 9 Q14.5 4 16 9" stroke="#05090F" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+    </div>
+    Autrix
+  </a>
+  <div class="nav-links">
+    <a href="#product">Product</a>
+    <a href="#features">Features</a>
+    <a href="#whom">Use Cases</a>
+    <a href="#cta" class="nav-cta">Request Access</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <canvas id="waveCanvas"></canvas>
+  <div class="hero-grain"></div>
+  <div class="hero-badge"><span class="badge-dot"></span>AI Sound Intelligence — Early Access 2025</div>
+  <h1 class="hero-title">Your game engine knows everything.<br><em>Your audio doesn't.</em></h1>
+  <p class="hero-sub">Autrix reads live game state and generates contextually intelligent audio in real time — no logic trees, no middleware plumbing, no compromise on creative vision.</p>
+  <div class="hero-btns">
+    <a href="#cta" class="btn-primary">Request Early Access</a>
+    <a href="#product" class="btn-outline">
+      <span class="play-icon"><svg width="7" height="9" viewBox="0 0 7 9" fill="none"><path d="M1 1L6 4.5L1 8V1Z" fill="white"/></svg></span>
+      See How It Works
+    </a>
+  </div>
+  <div class="hero-scroll"><div class="scroll-line"></div>Scroll</div>
+</section>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat-item reveal"><div class="stat-num">40K+</div><div class="stat-label">Audio assets in a single AAA title, each needing logic rules</div></div>
+  <div class="stat-item reveal reveal-d1"><div class="stat-num">65%</div><div class="stat-label">Of a sound designer's time lost to middleware plumbing</div></div>
+  <div class="stat-item reveal reveal-d2"><div class="stat-num">8 min</div><div class="stat-label">To generate a full intelligent temp audio pass for film</div></div>
+</div>
+
+<!-- PROBLEM -->
+<section id="problem">
+  <div class="reveal"><span class="section-label">The Gap</span></div>
+  <h2 class="section-title reveal reveal-d1">The most expensive problem in<br><em>game audio no one talks about</em></h2>
+  <div class="problem-grid">
+    <div class="problem-text reveal">
+      <p>A sound designer at a mid-tier studio spends three weeks building a logic tree in FMOD — a wall of conditional rules: <strong>"if player is running AND it's raining AND health is below 20% AND they're near metal, play footstep_wet_metal_03."</strong> A hundred trees. For one character. In one biome.</p>
+      <p>The game engine already knows everything. It knows the player's health, the weather, how many enemies are nearby, the narrative tension of the current moment. But this rich context <strong>never flows to the audio system.</strong> Sound designers are hand-coding rules to approximate intelligence the game already has.</p>
+      <p>For film: temp audio is a multi-week manual job. Directors review rough cuts with placeholder sounds or expensive temp tracks, and sound editors rebuild 60% of it after the director finally articulates what they actually wanted.</p>
+      <div class="problem-quote">
+        <p>"I spent more time writing Wwise event logic than I spent actually designing sounds. The creative work was maybe 30% of my time."</p>
+        <span>— Senior Audio Lead, Mid-Tier Game Studio</span>
+      </div>
+    </div>
+    <div class="problem-visual reveal reveal-d1">
+      <div class="pain-card">
+        <div class="pain-card-title"><span class="pain-icon"></span>Logic tree explosion</div>
+        <p>A single open-world game can require 10,000+ conditional audio rules. Each one hand-written. Each one a potential bug.</p>
+      </div>
+      <div class="pain-card">
+        <div class="pain-card-title"><span class="pain-icon"></span>Context blindness</div>
+        <p>FMOD and Wwise have no access to real game state. Sound designers simulate intelligence with rules that are always one edge case behind.</p>
+      </div>
+      <div class="pain-card">
+        <div class="pain-card-title"><span class="pain-icon"></span>Variation hell</div>
+        <p>Every sword swing, footstep, and ambient layer needs 30–50 variations to avoid repetition fatigue. Generating and tagging them is grunt work that devours creative hours.</p>
+      </div>
+      <div class="pain-card">
+        <div class="pain-card-title"><span class="pain-icon"></span>The indie cliff</div>
+        <p>Mid-tier and indie studios can't afford 20-person audio teams. The gap between AAA sound and everyone else is vast — and growing.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCT -->
+<section id="product">
+  <div class="reveal"><span class="section-label">The Product</span></div>
+  <h2 class="section-title reveal reveal-d1">A brain between your engine<br><em>and your audio middleware</em></h2>
+  <p class="section-sub reveal reveal-d2">Autrix sits between Unity or Unreal and your audio stack. It reads what's happening in the game and makes continuous, intelligent audio decisions — so you don't have to write the rules.</p>
+  <div class="product-layout">
+    <div>
+      <div class="product-steps">
+        <div class="p-step reveal">
+          <div class="p-step-num">1</div>
+          <div class="p-step-body">
+            <h4>Drop in your assets and intent</h4>
+            <p>Upload your sound library and a game design document — or a plain-language brief. Autrix reads them and generates a strong first draft of your entire audio logic graph. What would've taken six weeks takes six minutes.</p>
+          </div>
+        </div>
+        <div class="p-step reveal reveal-d1">
+          <div class="p-step-num">2</div>
+          <div class="p-step-body">
+            <h4>Map your emotional canvas</h4>
+            <p>A visual interface where you place emotional zones — calm, tense, triumphant, dread — and tag sound assets to feelings, not rules. Tell Autrix the vibe. It handles the conditional logic underneath.</p>
+          </div>
+        </div>
+        <div class="p-step reveal reveal-d2">
+          <div class="p-step-num">3</div>
+          <div class="p-step-body">
+            <h4>Ship with audio that thinks</h4>
+            <p>At runtime, Autrix reads a continuous feed of game state. It blends, generates, and responds dynamically — layering tension audio 45 seconds before a climax hits, dampening footsteps when rain starts, shifting the entire soundscape as narrative context changes.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="product-visual reveal reveal-d1">
+      <div class="pv-header">
+        <span class="pv-title">Autrix — Live Context Feed</span>
+        <span class="pv-badge">● Live</span>
+      </div>
+      <div class="pv-state-grid">
+        <div class="pv-state">
+          <div class="pv-state-label">Player Health</div>
+          <div class="pv-state-val" id="sv-health">18%</div>
+          <div class="pv-state-bar"><div class="pv-state-fill" id="sf-health" style="width:18%;background:#E24B4A"></div></div>
+        </div>
+        <div class="pv-state">
+          <div class="pv-state-label">Tension Level</div>
+          <div class="pv-state-val" id="sv-tension">High</div>
+          <div class="pv-state-bar"><div class="pv-state-fill" id="sf-tension" style="width:82%;background:var(--amber)"></div></div>
+        </div>
+        <div class="pv-state">
+          <div class="pv-state-label">Environment</div>
+          <div class="pv-state-val">Rain / Metal</div>
+          <div class="pv-state-bar"><div class="pv-state-fill" style="width:100%;background:var(--purple)"></div></div>
+        </div>
+        <div class="pv-state">
+          <div class="pv-state-label">Narrative Beat</div>
+          <div class="pv-state-val">Climax</div>
+          <div class="pv-state-bar"><div class="pv-state-fill" style="width:95%;background:var(--teal)"></div></div>
+        </div>
+      </div>
+      <div class="pv-waveform">
+        <div class="pv-waveform-label">Audio output — live blend</div>
+        <div class="wv-bars" id="wvBars"></div>
+      </div>
+      <div class="pv-output">
+        <div class="pv-output-dot"></div>
+        <p>Generating: footstep_wet_metal · tension_layer_03 · rain_ambience · climax_swell — blended in real time</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="reveal"><span class="section-label">Capabilities</span></div>
+  <h2 class="section-title reveal reveal-d1">Everything a sound team builds<br><em>automatically intelligently</em></h2>
+  <div class="features-grid">
+    <div class="feat-card reveal">
+      <div class="feat-icon t">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="4" stroke="#08D4AC" stroke-width="1.5"/><path d="M11 2V5M11 17V20M2 11H5M17 11H20M4.2 4.2L6.3 6.3M15.7 15.7L17.8 17.8M4.2 17.8L6.3 15.7M15.7 6.3L17.8 4.2" stroke="#08D4AC" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <h3>Context Reader</h3>
+      <p>Reads a live telemetry stream from Unity or Unreal — health, weather, enemies, narrative flags, pacing — and converts it to continuous audio intelligence without any custom engine work.</p>
+    </div>
+    <div class="feat-card reveal reveal-d1">
+      <div class="feat-icon t">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="2" y="6" width="18" height="10" rx="2" stroke="#08D4AC" stroke-width="1.5"/><path d="M5 11h3M9 9l2 4 2-4 2 4M17 11h0" stroke="#08D4AC" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h3>Emotion Mapper</h3>
+      <p>A spatial canvas where you place emotional zones and tag assets to feelings — not logic trees. Tell Autrix what a scene should feel like. It writes the rules.</p>
+    </div>
+    <div class="feat-card reveal reveal-d2">
+      <div class="feat-icon a">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M3 11 Q5.5 5 8 11 Q10.5 17 13 11 Q15.5 5 19 11" stroke="#F0A030" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg>
+      </div>
+      <h3>Infinite Variation Engine</h3>
+      <p>Generates subtle, contextually coherent variations on any sound asset at runtime — so no two footsteps, sword swings, or ambient moments ever sound identical.</p>
+    </div>
+    <div class="feat-card reveal reveal-d1">
+      <div class="feat-icon t">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M4 4h14v14H4z" stroke="#08D4AC" stroke-width="1.5" rx="2"/><path d="M4 8h14M8 8v10" stroke="#08D4AC" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <h3>Deep Middleware Bridge</h3>
+      <p>Native integrations with FMOD Studio and Wwise — the two tools every audio team already uses. No workflow change, no migration cost. Autrix augments your existing stack.</p>
+    </div>
+    <div class="feat-card reveal reveal-d2">
+      <div class="feat-icon a">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="3" y="3" width="16" height="12" rx="2" stroke="#F0A030" stroke-width="1.5"/><path d="M7 19h8M11 15v4" stroke="#F0A030" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <h3>Film Temp Generator</h3>
+      <p>Feed Autrix a rough cut and a scene brief. Get a full, emotionally matched temp audio pass in eight minutes — not two weeks. Directors get intelligent sound on the first review.</p>
+    </div>
+    <div class="feat-card reveal reveal-d3">
+      <div class="feat-icon p">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 3v4M11 15v4M3 11h4M15 11h4M5.6 5.6l2.8 2.8M13.6 13.6l2.8 2.8M5.6 16.4l2.8-2.8M13.6 8.4l2.8-2.8" stroke="#9B8FE8" stroke-width="1.5" stroke-linecap="round"/><circle cx="11" cy="11" r="2.5" stroke="#9B8FE8" stroke-width="1.5"/></svg>
+      </div>
+      <h3>Flywheel Intelligence</h3>
+      <p>Every project, override, and correction trains a proprietary model of how human designers respond to game context. The longer you use it, the better it knows your studio's creative voice.</p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="reveal"><span class="section-label">How It Works</span></div>
+  <h2 class="section-title reveal reveal-d1">From install to <em>intelligent audio</em><br>in three steps</h2>
+  <div class="how-steps">
+    <div class="how-step reveal">
+      <div class="how-num">1</div>
+      <h3>Connect to your engine</h3>
+      <p>Install the Autrix SDK into Unity or Unreal in minutes. It automatically discovers your FMOD or Wwise project and begins reading game state telemetry. No custom engine modifications. No devops overhead.</p>
+      <span class="how-tag">Unity · Unreal · FMOD · Wwise</span>
+    </div>
+    <div class="how-step reveal reveal-d1">
+      <div class="how-num">2</div>
+      <h3>Map your intent</h3>
+      <p>Open the Autrix canvas. Drop in your sound assets. Place emotional zones across your game's arc. Tag feelings, not rules. The first draft of your complete audio logic graph is generated in minutes.</p>
+      <span class="how-tag">Visual · Intuitive · No code</span>
+    </div>
+    <div class="how-step reveal reveal-d2">
+      <div class="how-num">3</div>
+      <h3>Ship with audio that thinks</h3>
+      <p>Autrix runs at runtime as a lightweight inference layer. It reads, decides, and blends continuously — responding to your game the way a human audio director would, if they could watch every second of every playthrough.</p>
+      <span class="how-tag">Real-time · Adaptive · Intelligent</span>
+    </div>
+  </div>
+</section>
+
+<!-- FOR WHOM -->
+<section id="whom">
+  <div class="reveal"><span class="section-label">Use Cases</span></div>
+  <h2 class="section-title reveal reveal-d1">Built for the people who make<br><em>worlds sound alive</em></h2>
+  <div class="whom-grid">
+    <div class="whom-card games reveal">
+      <div class="whom-bg-text">Game</div>
+      <div class="whom-card-label">Game Studios</div>
+      <h3>From indie to AAA, audio that scales with your ambition</h3>
+      <p>Whether you have a 20-person audio team or a single junior sound designer, Autrix gives you the intelligent audio infrastructure that used to require a full middleware engineering team to build.</p>
+      <div class="whom-list">
+        <div class="whom-item"><span class="whom-check"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="#08D4AC" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Eliminate FMOD/Wwise logic tree maintenance</div>
+        <div class="whom-item"><span class="whom-check"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="#08D4AC" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Real-time adaptive audio across all biomes and states</div>
+        <div class="whom-item"><span class="whom-check"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="#08D4AC" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Give audio directors feedback in creative terms, not technical ones</div>
+        <div class="whom-item"><span class="whom-check"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="#08D4AC" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Reduce audio QA bugs by 60%+</div>
+      </div>
+    </div>
+    <div class="whom-card film reveal reveal-d1">
+      <div class="whom-bg-text">Film</div>
+      <div class="whom-card-label">Film & TV Post-Production</div>
+      <h3>Temp audio that's intelligent from the first pass</h3>
+      <p>Stop handing directors rough cuts with placeholder sounds. Autrix generates a full, emotionally coherent temp audio pass in minutes — so the creative conversation starts from something real, not from silence.</p>
+      <div class="whom-list">
+        <div class="whom-item"><span class="whom-check"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="#F0A030" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Full temp audio pass from rough cut in 8 minutes</div>
+        <div class="whom-item"><span class="whom-check"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="#F0A030" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Scene-aware emotional matching — not just stock audio</div>
+        <div class="whom-item"><span class="whom-check"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="#F0A030" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Sound editors start from 70% complete, not zero</div>
+        <div class="whom-item"><span class="whom-check"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="#F0A030" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Director feedback in feeling, not technical specification</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MANIFESTO -->
+<section id="manifesto">
+  <div class="manifesto-inner">
+    <div class="manifesto-rule"></div>
+    <blockquote class="reveal">"Sound designers are <strong>composers</strong>.<br>Not programmers.<br>Autrix gives you the <strong>creative time back</strong>."</blockquote>
+    <p class="manifesto-attr reveal reveal-d1">— Aakarshan Saxena, Founder & CEO, Autrix</p>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <div class="cta-inner">
+    <div class="reveal"><span class="section-label">Early Access</span></div>
+    <h2 class="reveal reveal-d1">Ready to stop writing<br><em>rules and start making music?</em></h2>
+    <p class="reveal reveal-d2">Autrix is in closed early access. We're onboarding select game studios and post-production houses now. Spots are limited — the product gets better with every team that uses it.</p>
+    <div class="cta-form reveal reveal-d3">
+      <input type="email" class="cta-input" placeholder="your@studio.com">
+      <a href="#" class="btn-primary">Get Access</a>
+    </div>
+    <p class="cta-note reveal reveal-d4">No spam. No pitch decks. Just a conversation about your audio stack.</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="nav-logo" style="margin-bottom:10px">
+        <div class="nav-logo-mark"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2 9 Q4.5 4 7 9 Q9.5 14 12 9 Q14.5 4 16 9" stroke="#05090F" stroke-width="2" stroke-linecap="round" fill="none"/></svg></div>
+        Autrix
+      </div>
+      <p>AI Sound Intelligence for Games & Film. Founded by Aakarshan Saxena.</p>
+    </div>
+    <div class="footer-links">
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="#product">How It Works</a>
+        <a href="#features">Features</a>
+        <a href="#whom">Use Cases</a>
+        <a href="#cta">Early Access</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="#">About</a>
+        <a href="#">Blog</a>
+        <a href="#">Careers</a>
+        <a href="#">Contact</a>
+      </div>
+      <div class="footer-col">
+        <h4>Integrations</h4>
+        <a href="#">Unity SDK</a>
+        <a href="#">Unreal SDK</a>
+        <a href="#">FMOD Bridge</a>
+        <a href="#">Wwise Bridge</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 Autrix. Founded by Aakarshan Saxena.</p>
+    <p>Privacy · Terms</p>
+  </div>
+</footer>
+
+<script>
+// ---- NAV scroll ----
+const nav=document.getElementById('nav');
+window.addEventListener('scroll',()=>{nav.classList.toggle('scrolled',window.scrollY>40)});
+
+// ---- HERO WAVEFORM CANVAS ----
+const canvas=document.getElementById('waveCanvas');
+const ctx=canvas.getContext('2d');
+let W,H,t=0;
+function resize(){W=canvas.width=canvas.offsetWidth;H=canvas.height=canvas.offsetHeight}
+resize();window.addEventListener('resize',resize);
+const waves=[
+  {freq:0.008,amp:0.12,speed:0.018,color:'rgba(8,212,172,0.35)',phase:0},
+  {freq:0.012,amp:0.08,speed:0.012,color:'rgba(8,212,172,0.18)',phase:1.5},
+  {freq:0.006,amp:0.15,speed:0.009,color:'rgba(155,143,232,0.2)',phase:3},
+  {freq:0.015,amp:0.06,speed:0.022,color:'rgba(240,160,48,0.15)',phase:5},
+  {freq:0.005,amp:0.18,speed:0.006,color:'rgba(8,212,172,0.1)',phase:2},
+];
+function drawWave(w){
+  ctx.beginPath();
+  const y0=H*0.5;
+  ctx.moveTo(0,y0);
+  for(let x=0;x<=W;x+=2){
+    const y=y0+Math.sin(x*w.freq+t*w.speed+w.phase)*H*w.amp;
+    ctx.lineTo(x,y);
+  }
+  ctx.strokeStyle=w.color;
+  ctx.lineWidth=1.5;
+  ctx.stroke();
+}
+function animate(){
+  ctx.clearRect(0,0,W,H);
+  waves.forEach(drawWave);
+  t++;
+  requestAnimationFrame(animate);
+}
+animate();
+
+// ---- WV BARS (product visual) ----
+const wvBars=document.getElementById('wvBars');
+const barCount=32;
+for(let i=0;i<barCount;i++){const b=document.createElement('div');b.className='wv-bar';b.style.height='20%';wvBars.appendChild(b)}
+const bars=wvBars.querySelectorAll('.wv-bar');
+function animBars(){
+  bars.forEach((b,i)=>{
+    const h=20+Math.random()*75;
+    b.style.height=h+'%';
+    b.style.opacity=0.4+h/200;
+  });
+}
+setInterval(animBars,180);animBars();
+
+// ---- SCROLL REVEAL ----
+const reveals=document.querySelectorAll('.reveal');
+const io=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');io.unobserve(e.target)}});
+},{threshold:0.12});
+reveals.forEach(r=>io.observe(r));
+</script>
+</body>
+</html>
